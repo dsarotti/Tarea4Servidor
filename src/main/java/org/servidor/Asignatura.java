@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 public class Asignatura implements Serializable {
     private int id;
-    private String nombreasig;
+    private String nombreAsignatura;
 
-    public Asignatura(int id, String nombreasig) {
+    public Asignatura(int id, String nombreAsignatura) {
         this.id = id;
-        this.nombreasig = nombreasig;
+        this.nombreAsignatura = nombreAsignatura;
     }
 
     public int getId() {
@@ -19,11 +19,11 @@ public class Asignatura implements Serializable {
         this.id = id;
     }
 
-    public String getNombreasig() {
-        return nombreasig;
+    public String getNombreAsignatura() {
+        return nombreAsignatura;
     }
 
-    public void setNombreasig(String nombreasig) {
-        this.nombreasig = nombreasig;
+    public void setNombreAsignatura(String nombreAsignatura) {
+        this.nombreAsignatura = nombreAsignatura;
     }
 }
