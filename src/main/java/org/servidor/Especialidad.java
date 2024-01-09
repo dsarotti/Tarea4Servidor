@@ -6,7 +6,7 @@ public class Especialidad implements Serializable {
     private int id;
     private String nombreEspecialidad;
 
-    public Especialidad(int id, String nombreespe) {
+    public Especialidad(int id, String nombreEspecialidad) {
         this.id = id;
         this.nombreEspecialidad = nombreEspecialidad;
     }
