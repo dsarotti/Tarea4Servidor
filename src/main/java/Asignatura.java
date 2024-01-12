@@ -1,5 +1,3 @@
-package org.servidor;
-
 import java.io.Serializable;
 
 public class Asignatura implements Serializable {
