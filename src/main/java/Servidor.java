@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,10 +62,8 @@ public class Servidor
         @Override
         public void run() {
             while (true) {
-
-                contadorClientes.incrementAndGet();
                 try {
-                    new Thread(new ManejadorCliente(server.accept(), "Cliente " + contadorClientes.incrementAndGet())).start();
+                    new Thread(new ManejadorCliente(server.accept(), contadorClientes.getAndIncrement())).start();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -75,10 +74,10 @@ public class Servidor
     // Clase interna para manejar la comunicación con cada cliente
     static class ManejadorCliente implements Runnable {
         private Socket socketCliente;
-        private String nombreCliente;
+        private int idCliente;
 
-        public ManejadorCliente(Socket socketCliente, String nombreCliente) {
-            this.nombreCliente = nombreCliente;
+        public ManejadorCliente(Socket socketCliente, int idCliente) {
+            this.idCliente=idCliente;
             this.socketCliente=socketCliente;
         }
 
@@ -86,17 +85,23 @@ public class Servidor
         public void run() {
             ObjectOutputStream salidaObjeto = null;
             try {
-                System.out.println("Cliente " + nombreCliente + " conectado!");
+                System.out.println("Cliente " + idCliente + " conectado!");
                 salidaObjeto = new ObjectOutputStream(socketCliente.getOutputStream());
                 Scanner entradaDatos = new Scanner(socketCliente.getInputStream());
 
-                salidaObjeto.writeObject("¡Bienvenido, " + nombreCliente + "!");
+                salidaObjeto.writeInt(idCliente);
+                salidaObjeto.flush();
 
                 // Escuchar solicitudes del cliente y enviar el Profesor correspondiente
                 while (true) {
                     // Recibir el ID del profesor que el cliente desea obtener
-                    int idProfesorSolicitado = Integer.parseInt(entradaDatos.nextLine());
-
+                    int idProfesorSolicitado=-1;
+                    try{
+                        idProfesorSolicitado= Integer.parseInt(entradaDatos.nextLine());
+                    }catch (NoSuchElementException e){
+                        break;
+                    }
+                    if(idProfesorSolicitado==-1)break;
                     // Buscar el profesor con el ID solicitado
                     Profesor profesorEncontrado = buscarProfesorPorId(idProfesorSolicitado);
 
@@ -106,18 +111,15 @@ public class Servidor
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Cliente " + idCliente + " desconectado. de forma inesperada");
             } finally {
                 try {
-                    // Cerrar el socket cuando el cliente cierra la conexión
-                    socketCliente.close();
-
                     if (salidaObjeto != null) {
                         salidaObjeto.close();
                     }
-
-
-
+                    // Cerrar el socket cuando el cliente cierra la conexión
+                    socketCliente.close();
+                    System.err.println("Cliente " + idCliente + " desconectado.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
