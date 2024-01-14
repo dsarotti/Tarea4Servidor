@@ -93,7 +93,7 @@ public class Servidor
             ObjectOutputStream salidaObjeto = null;
             //Hora y conexión
             horaConexion = Timestamp.valueOf(LocalDateTime.now());
-            CustomLogger.getInstance().agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + CustomLogger.formatearTimestamp(horaConexion) + ")");
+            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + CustomLogger.formatearTimestamp(horaConexion) + ")");
             try {
                 System.out.println("Cliente " + idCliente + " conectado!");
                 salidaObjeto = new ObjectOutputStream(socketCliente.getOutputStream());
@@ -137,7 +137,7 @@ public class Servidor
 
             }
             Timestamp horaDesconexion= Timestamp.valueOf(LocalDateTime.now());
-            CustomLogger.getInstance().agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + CustomLogger.formatearTimestamp(horaDesconexion) + ")");
+            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + CustomLogger.formatearTimestamp(horaDesconexion) + ")");
 
         }
     }
