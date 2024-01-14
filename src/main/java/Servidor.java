@@ -1,6 +1,10 @@
+import java.beans.Customizer;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLOutput;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,6 +68,7 @@ public class Servidor
             while (true) {
                 try {
                     new Thread(new ManejadorCliente(server.accept(), contadorClientes.getAndIncrement())).start();
+                    System.out.println("Road to Stack Overflow");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -75,6 +80,7 @@ public class Servidor
     static class ManejadorCliente implements Runnable {
         private Socket socketCliente;
         private int idCliente;
+        private Timestamp horaConexion;
 
         public ManejadorCliente(Socket socketCliente, int idCliente) {
             this.idCliente=idCliente;
@@ -83,7 +89,11 @@ public class Servidor
 
         @Override
         public void run() {
+            CustomLogger logger = CustomLogger.getInstance();
             ObjectOutputStream salidaObjeto = null;
+            //Hora y conexión
+            horaConexion = Timestamp.valueOf(LocalDateTime.now());
+            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + CustomLogger.formatearTimestamp(horaConexion) + ")");
             try {
                 System.out.println("Cliente " + idCliente + " conectado!");
                 salidaObjeto = new ObjectOutputStream(socketCliente.getOutputStream());
@@ -98,6 +108,7 @@ public class Servidor
                     int idProfesorSolicitado=-1;
                     try{
                         idProfesorSolicitado= Integer.parseInt(entradaDatos.nextLine());
+                        logger.agregarLineaAlFinal("    Consultando id: " + idProfesorSolicitado + ", solicitado por el cliente: " + idCliente);
                     }catch (NoSuchElementException e){
                         break;
                     }
@@ -123,7 +134,11 @@ public class Servidor
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
             }
+            Timestamp horaDesconexion= Timestamp.valueOf(LocalDateTime.now());
+            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + CustomLogger.formatearTimestamp(horaDesconexion) + ")");
+
         }
     }
 
