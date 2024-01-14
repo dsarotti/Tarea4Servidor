@@ -53,7 +53,7 @@ public class Servidor
 
         // Se utiliza AtomicInteger para poder actualizar el valor evitando problemas de
         // concurrencia.
-        public static AtomicInteger contadorClientes = new AtomicInteger(0);
+        public static AtomicInteger contadorClientes = new AtomicInteger(1);
 
         public GestorSockets(ServerSocket server) {
             this.server = server;
