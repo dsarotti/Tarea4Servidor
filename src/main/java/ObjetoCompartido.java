@@ -4,15 +4,35 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 /**
- * Singleton
- *
+ * La clase ObjetoCompartido implementa un patrón Singleton y proporciona funcionalidades
+ * para el manejo de un archivo de registro (log) compartido entre múltiples hilos.
  */
 public class ObjetoCompartido {
 
+    /**
+     * Instancia única de la clase
+     */
     static ObjetoCompartido objetoCompartidoInstance;
+
+    /**
+     * Archivo de registro (log)
+     */
     private File logFile;
 
-    private static File inicializarCustomLogger() {
+    /**
+     * Constructor privado que inicializa el archivo de log.
+     */
+    private ObjetoCompartido() {
+        logFile = inicializarArchivoLog();
+    }
+
+    /**
+     * Método privado para inicializar el archivo de log.
+     * Verifica la existencia del archivo y lo crea si no existe.
+     *
+     * @return El archivo de log.
+     */
+    private static File inicializarArchivoLog() {
         // Nombre del archivo a verificar/crear
         String nombreArchivo = "FichLog.txt";
 
@@ -31,22 +51,25 @@ public class ObjetoCompartido {
         return archivo;
     }
 
+    /**
+     * Agrega una nueva línea al final del archivo de log.
+     *
+     * @param nuevaLinea La línea a agregar al archivo de log.
+     */
     public void agregarLineaAlFinal(String nuevaLinea) {
         BufferedWriter writer = null;
         try {
+
+            // Abre el archivo en modo "append" para añadir nuevas líneas al final
             writer = new BufferedWriter(new FileWriter(logFile, true));
 
-            // Usamos true como segundo parámetro para indicar que queremos abrir el archivo en modo "append"
-            // Es decir, que se añadan nuevas líneas al final del archivo
-
-            // Escribimos la nueva línea al final del archivo
-            writer.write(nuevaLinea );
-            writer.newLine(); // Añadimos un salto de línea después de la nueva línea
+            writer.write(nuevaLinea ); // Escribe la nueva línea al final del archivo
+            writer.newLine(); // Añade un salto de línea después de la nueva línea
             writer.flush();
-            System.out.println("Se ha añadido la línea al archivo.");
+            System.out.println("Se ha añadido una línea al archivo de log.");
 
         } catch (IOException e) {
-            System.err.println("Error al añadir la línea al archivo.");
+            System.err.println("Error al añadir la línea al archivo de log.");
             e.printStackTrace();
         } finally {
             try {
@@ -59,6 +82,12 @@ public class ObjetoCompartido {
         }
     }
 
+    /**
+     * Formatea un objeto Timestamp como una cadena con un formato específico.
+     *
+     * @param timestamp El Timestamp a formatear.
+     * @return La cadena formateada.
+     */
     public static String formatearTimestamp(Timestamp timestamp) {
         // Se crea un objeto SimpleDateFormat con el formato deseado
         SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -70,10 +99,11 @@ public class ObjetoCompartido {
         return formatoFecha.format(date);
     }
 
-    private ObjetoCompartido() {
-        logFile = inicializarCustomLogger();
-    }
-
+    /**
+     * Método estático que devuelve la instancia única de la clase ObjetoCompartido.
+     *
+     * @return La instancia única de ObjetoCompartido.
+     */
     public static ObjetoCompartido getInstance() {
         if (objetoCompartidoInstance == null) {
             objetoCompartidoInstance = new ObjetoCompartido();
