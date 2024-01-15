@@ -1,23 +1,25 @@
-import java.beans.Customizer;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLOutput;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Servidor
-{
+public class HiloServidor implements Runnable{
     final int PUERTO = 12345;
     private static Profesor[] profesores;
     private int lastIdProfesor;
     private int lastIdEspecialidad;
     private int lastIdAsignatura;
 
-    public Servidor() throws IOException {
+    @Override
+    public void run() {
+        init();
+    }
+
+    public HiloServidor() {
         this.lastIdProfesor =0;
         this.lastIdAsignatura=300;
         this.lastIdEspecialidad=200;
@@ -25,8 +27,9 @@ public class Servidor
 
     /**
      * Inicializa el array de 5 profesores con una especialidad y 3 asignaturas cada uno.
+     * Después ejecuta el bucle para aceptar conexiones
      */
-    public void init(){
+    private void init(){
         profesores=new Profesor[5];
         //Inicializar profesores
         for(int i=0;i<5;i++){
@@ -41,6 +44,7 @@ public class Servidor
         }
 
         try {
+            // inicia el bucle para aceptar conexiones entrantes.
             ServerSocket servidorSocket = new ServerSocket(PUERTO);
             new Thread(new GestorSockets(servidorSocket)).start();
         } catch (IOException e) {
@@ -68,7 +72,6 @@ public class Servidor
             while (true) {
                 try {
                     new Thread(new ManejadorCliente(server.accept(), contadorClientes.getAndIncrement())).start();
-                    System.out.println("Road to Stack Overflow");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -89,11 +92,11 @@ public class Servidor
 
         @Override
         public void run() {
-            CustomLogger logger = CustomLogger.getInstance();
+            ObjetoCompartido logger = ObjetoCompartido.getInstance();
             ObjectOutputStream salidaObjeto = null;
             //Hora y conexión
             horaConexion = Timestamp.valueOf(LocalDateTime.now());
-            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + CustomLogger.formatearTimestamp(horaConexion) + ")");
+            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + ObjetoCompartido.formatearTimestamp(horaConexion) + ")");
             try {
                 System.out.println("Cliente " + idCliente + " conectado!");
                 salidaObjeto = new ObjectOutputStream(socketCliente.getOutputStream());
@@ -137,7 +140,7 @@ public class Servidor
 
             }
             Timestamp horaDesconexion= Timestamp.valueOf(LocalDateTime.now());
-            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + CustomLogger.formatearTimestamp(horaDesconexion) + ")");
+            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + ObjetoCompartido.formatearTimestamp(horaDesconexion) + ")");
 
         }
     }

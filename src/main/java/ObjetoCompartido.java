@@ -3,9 +3,13 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-public class CustomLogger {
+/**
+ * Singleton
+ *
+ */
+public class ObjetoCompartido {
 
-    static CustomLogger customLoggerInstance;
+    static ObjetoCompartido objetoCompartidoInstance;
     private File logFile;
 
     private static File inicializarCustomLogger() {
@@ -66,14 +70,14 @@ public class CustomLogger {
         return formatoFecha.format(date);
     }
 
-    private CustomLogger() {
+    private ObjetoCompartido() {
         logFile = inicializarCustomLogger();
     }
 
-    public static CustomLogger getInstance() {
-        if (customLoggerInstance == null) {
-            customLoggerInstance = new CustomLogger();
+    public static ObjetoCompartido getInstance() {
+        if (objetoCompartidoInstance == null) {
+            objetoCompartidoInstance = new ObjetoCompartido();
         }
-        return customLoggerInstance;
+        return objetoCompartidoInstance;
     }
 }
