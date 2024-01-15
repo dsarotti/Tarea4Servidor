@@ -6,16 +6,24 @@ import java.io.Serializable;
  */
 public class Profesor implements Serializable {
 
-     //Identificador único del profesor.
+    /**
+     * Identificador único del profesor.
+     */
     private int idprofesor;
 
-    //Nombre del profesor.
+    /**
+     * Nombre del profesor.
+     */
     private String nombre;
 
-    //Array de asignaturas que imparte el profesor.
+    /**
+     * Array de asignaturas que imparte el profesor.
+     */
     private Asignatura[] asignaturas;
 
-    //Especialidad del profesor.
+    /**
+     * Especialidad del profesor.
+     */
     private Especialidad especialidad;
 
     /**
