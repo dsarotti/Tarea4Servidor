@@ -1,34 +1,53 @@
-import java.beans.Customizer;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLOutput;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Servidor
-{
+/**
+ * La clase HiloServidor implementa la interfaz Runnable y representa un hilo de servidor
+ * que acepta conexiones de clientes y gestiona la comunicación con ellos.
+ */
+public class HiloServidor implements Runnable{
     final int PUERTO = 12345;
     private static Profesor[] profesores;
     private int lastIdProfesor;
     private int lastIdEspecialidad;
     private int lastIdAsignatura;
 
-    public Servidor() throws IOException {
+
+
+    /**
+     * Constructor de la clase HiloServidor.
+     * Inicializa los contadores de ID y llama al método de inicialización.
+     */
+    public HiloServidor() {
         this.lastIdProfesor =0;
         this.lastIdAsignatura=300;
         this.lastIdEspecialidad=200;
     }
 
     /**
-     * Inicializa el array de 5 profesores con una especialidad y 3 asignaturas cada uno.
+     * Método principal que se ejecuta al iniciar el hilo.
+     * Llama al método de inicialización.
      */
-    public void init(){
-        profesores=new Profesor[5];
+    @Override
+    public void run() {
+        init();
+    }
+
+    /**
+     * Inicializa el array de 5 profesores con una especialidad y 3 asignaturas cada uno.
+     * Por simplicidad en este ejercicio no se asignan nombre reales para los objetos, en su lugar se utilizan los
+     * valores del índice del bucle.
+     * Después ejecuta un bucle para aceptar conexiones.
+     */
+    private void init(){
         //Inicializar profesores
+        profesores=new Profesor[5];
         for(int i=0;i<5;i++){
             int idTempEspe = getNewIdEspecialidad();
             Especialidad espe = new Especialidad(idTempEspe,"especialidad " + idTempEspe );
@@ -40,7 +59,11 @@ public class Servidor
             profesores[i]=new Profesor(getNewIdProfesor(),nombreProfesor,asignaturas,espe);
         }
 
+        //Muestra los profesores, especialidad y asignaturas por la salida estándar
+        report();
+
         try {
+            // inicia el bucle para aceptar conexiones entrantes.
             ServerSocket servidorSocket = new ServerSocket(PUERTO);
             new Thread(new GestorSockets(servidorSocket)).start();
         } catch (IOException e) {
@@ -59,16 +82,24 @@ public class Servidor
         // concurrencia.
         public static AtomicInteger contadorClientes = new AtomicInteger(1);
 
+        /**
+         * Constructor de la clase GestorSockets.
+         *
+         * @param server El socket del servidor.
+         */
         public GestorSockets(ServerSocket server) {
             this.server = server;
         }
 
+        /**
+         * Método principal que se ejecuta al iniciar el hilo.
+         * Acepta conexiones entrantes y crea un nuevo hilo para cada cliente.
+         */
         @Override
         public void run() {
             while (true) {
                 try {
                     new Thread(new ManejadorCliente(server.accept(), contadorClientes.getAndIncrement())).start();
-                    System.out.println("Road to Stack Overflow");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -76,24 +107,49 @@ public class Servidor
         }
     }
 
-    // Clase interna para manejar la comunicación con cada cliente
+    /**
+     * La clase ManejadorCliente implementa la interfaz Runnable y se encarga de manejar la comunicación
+     * con un cliente específico en un hilo separado.
+     */
     static class ManejadorCliente implements Runnable {
+        /**
+         * Socket del cliente.
+         */
         private Socket socketCliente;
+
+        /**
+         * Identificador único del cliente.
+         */
         private int idCliente;
+
+        /**
+         * Hora de conexión del cliente.
+         */
         private Timestamp horaConexion;
 
+        /**
+         * Constructor de la clase ManejadorCliente.
+         *
+         * @param socketCliente El socket del cliente.
+         * @param idCliente     El identificador único del cliente.
+         */
         public ManejadorCliente(Socket socketCliente, int idCliente) {
             this.idCliente=idCliente;
             this.socketCliente=socketCliente;
         }
 
+        /**
+         * Método principal que se ejecuta al iniciar el hilo del cliente.
+         * Maneja la comunicación con el cliente, enviando información del profesor solicitado.
+         */
         @Override
         public void run() {
-            CustomLogger logger = CustomLogger.getInstance();
+            ObjetoCompartido logger = ObjetoCompartido.getInstance();
             ObjectOutputStream salidaObjeto = null;
-            //Hora y conexión
+
+            //Hora del inicio de la conexión
             horaConexion = Timestamp.valueOf(LocalDateTime.now());
-            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + CustomLogger.formatearTimestamp(horaConexion) + ")");
+            logger.agregarLineaAlFinal("Cliente " + idCliente + " iniciado, (" + ObjetoCompartido.formatearTimestamp(horaConexion) + ")");
             try {
                 System.out.println("Cliente " + idCliente + " conectado!");
                 salidaObjeto = new ObjectOutputStream(socketCliente.getOutputStream());
@@ -102,14 +158,17 @@ public class Servidor
                 salidaObjeto.writeInt(idCliente);
                 salidaObjeto.flush();
 
+                int idProfesorSolicitado;
                 // Escuchar solicitudes del cliente y enviar el Profesor correspondiente
                 while (true) {
                     // Recibir el ID del profesor que el cliente desea obtener
-                    int idProfesorSolicitado=-1;
+                    idProfesorSolicitado= (-1);
                     try{
-                        idProfesorSolicitado= Integer.parseInt(entradaDatos.nextLine());
+                        //Si se ha recibido un número, guardarlo y registrarlo en el log
+                        idProfesorSolicitado = Integer.parseInt(entradaDatos.nextLine());
                         logger.agregarLineaAlFinal("    Consultando id: " + idProfesorSolicitado + ", solicitado por el cliente: " + idCliente);
-                    }catch (NoSuchElementException e){
+                    }catch (NoSuchElementException | NumberFormatException e){
+                        //Si no se ha recibido un número, terminar la conexión
                         break;
                     }
                     if(idProfesorSolicitado==-1)break;
@@ -136,12 +195,20 @@ public class Servidor
                 }
 
             }
+
+            // Hora de desconexión
             Timestamp horaDesconexion= Timestamp.valueOf(LocalDateTime.now());
-            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + CustomLogger.formatearTimestamp(horaDesconexion) + ")");
+            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + ObjetoCompartido.formatearTimestamp(horaDesconexion) + ")");
 
         }
     }
 
+    /**
+     * Método para buscar un profesor por su ID.
+     *
+     * @param idProfesor El ID del profesor a buscar.
+     * @return El profesor encontrado, o null si no se encuentra.
+     */
     private static Profesor buscarProfesorPorId(int idProfesor) {
         for (Profesor profesor : profesores) {
             if (profesor.getIdprofesor() == idProfesor) {
@@ -150,13 +217,31 @@ public class Servidor
         }
         return null; // Devolver null si no se encuentra el profesor
     }
+
+    /**
+     * Método para obtener un nuevo ID de especialidad.
+     *
+     * @return El nuevo ID de especialidad.
+     */
     private int getNewIdEspecialidad(){return lastIdEspecialidad++;}
 
+    /**
+     * Método para obtener un nuevo ID de profesor.
+     *
+     * @return El nuevo ID de profesor.
+     */
     private int getNewIdProfesor(){return lastIdProfesor++;}
 
+    /**
+     * Método para obtener un nuevo ID de asignatura.
+     *
+     * @return El nuevo ID de asignatura.
+     */
     private int getNewIdAsignatura(){return lastIdAsignatura++;}
 
-    //Muestra por la salida estándar los datos de los profesores y sus asignaturas. (para debug)
+    /**
+     * Método para mostrar por la salida estándar los datos de los profesores y sus asignaturas (para debug).
+     */
     public void report(){
         StringBuilder builder = new StringBuilder();
         for (Profesor profesor : profesores) {
