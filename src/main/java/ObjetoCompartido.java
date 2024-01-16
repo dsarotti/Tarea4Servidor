@@ -42,7 +42,7 @@ public class ObjetoCompartido {
             try {
                 // Crear el archivo si no existe
                 archivo.createNewFile();
-                System.out.println("Se ha creado el archivo de log " + nombreArchivo);
+
             } catch (IOException e) {
                 System.err.println("Error al crear el archivo de log " + nombreArchivo);
                 e.printStackTrace();
@@ -66,7 +66,6 @@ public class ObjetoCompartido {
             writer.write(nuevaLinea); // Escribe la nueva línea al final del archivo
             writer.newLine(); // Añade un salto de línea después de la nueva línea
             writer.flush();
-            System.out.println("Se ha añadido una línea al archivo de log.");
 
         } catch (IOException e) {
             System.err.println("Error al añadir la línea al archivo de log.");
