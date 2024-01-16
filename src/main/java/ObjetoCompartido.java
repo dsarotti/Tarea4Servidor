@@ -56,14 +56,14 @@ public class ObjetoCompartido {
      *
      * @param nuevaLinea La línea a agregar al archivo de log.
      */
-    public void agregarLineaAlFinal(String nuevaLinea) {
+    public synchronized void agregarLineaAlFinal(String nuevaLinea) {
         BufferedWriter writer = null;
         try {
 
             // Abre el archivo en modo "append" para añadir nuevas líneas al final
             writer = new BufferedWriter(new FileWriter(logFile, true));
 
-            writer.write(nuevaLinea ); // Escribe la nueva línea al final del archivo
+            writer.write(nuevaLinea); // Escribe la nueva línea al final del archivo
             writer.newLine(); // Añade un salto de línea después de la nueva línea
             writer.flush();
             System.out.println("Se ha añadido una línea al archivo de log.");
@@ -106,7 +106,11 @@ public class ObjetoCompartido {
      */
     public static ObjetoCompartido getInstance() {
         if (objetoCompartidoInstance == null) {
-            objetoCompartidoInstance = new ObjetoCompartido();
+            synchronized (ObjetoCompartido.class) {
+                if (objetoCompartidoInstance == null) {
+                    objetoCompartidoInstance = new ObjetoCompartido();
+                }
+            }
         }
         return objetoCompartidoInstance;
     }
