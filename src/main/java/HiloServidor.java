@@ -174,7 +174,11 @@ public class HiloServidor implements Runnable{
                     if(idProfesorSolicitado==-1)break;
                     // Buscar el profesor con el ID solicitado
                     Profesor profesorEncontrado = buscarProfesorPorId(idProfesorSolicitado);
-
+                    if (profesorEncontrado==null){
+                        Asignatura[] vacio= {};
+                        Especialidad espe = new Especialidad(0, "sin datos");
+                        profesorEncontrado= new Profesor(0, "No existe", vacio, espe);
+                    }
                     // Enviar el objeto Profesor al cliente
                     salidaObjeto.writeObject(profesorEncontrado);
                     salidaObjeto.flush();
