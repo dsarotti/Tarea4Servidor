@@ -54,7 +54,8 @@ public class HiloServidor implements Runnable{
             String nombreProfesor="Nombre " +i;
             Asignatura[] asignaturas = new Asignatura[3];
             for (int j = 0 ; j<3;j++){
-                asignaturas[j] = new Asignatura(getNewIdAsignatura(),"NombreAsignatura" + j );
+                int idTempAsignatura = getNewIdAsignatura();
+                asignaturas[j] = new Asignatura(idTempAsignatura,"NombreAsignatura" + idTempAsignatura );
             }
             profesores[i]=new Profesor(getNewIdProfesor(),nombreProfesor,asignaturas,espe);
         }
