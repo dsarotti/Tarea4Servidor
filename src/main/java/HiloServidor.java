@@ -160,24 +160,25 @@ public class HiloServidor implements Runnable {
                 salidaObjeto.writeInt(idCliente);
                 salidaObjeto.flush();
 
-                int idProfesorSolicitado;
+                String idProfeSoli="";
                 // Escuchar solicitudes del cliente y enviar el Profesor correspondiente
                 while (true) {
                     // Recibir el ID del profesor que el cliente desea obtener
-                    idProfesorSolicitado = (-1);
                     try {
+                        idProfeSoli = entradaDatos.nextLine();
                         //Si se ha recibido un número, guardarlo y registrarlo en el log
-                        idProfesorSolicitado = Integer.parseInt(entradaDatos.nextLine());
-                        logger.agregarLineaAlFinal("    Consultando id: " + idProfesorSolicitado + ", solicitado por el cliente: " + idCliente);
+                        logger.agregarLineaAlFinal("    Consultando id: " + Integer.parseInt(idProfeSoli) + ", solicitado por el cliente: " + idCliente);
                     } catch (NoSuchElementException | NumberFormatException e) {
-                        //Si no se ha recibido un número, terminar la conexión
-                        break;
+                        if(idProfeSoli.equals("*")) {
+                            break;
+                        }else{
+                            throw new IOException();
+                        }
                     }
-                    if (idProfesorSolicitado == -1) break;
 
-                    System.out.println(("Consultando id: " + idProfesorSolicitado + ", solicitado por cliente: " + idCliente).indent(4).stripTrailing());
+                    System.out.println(("Consultando id: " + idProfeSoli + ", solicitado por cliente: " + idCliente).indent(4).stripTrailing());
                     // Buscar el profesor con el ID solicitado
-                    Profesor profesorEncontrado = buscarProfesorPorId(idProfesorSolicitado);
+                    Profesor profesorEncontrado = buscarProfesorPorId(Integer.parseInt(idProfeSoli));
 
                     if (profesorEncontrado == null) {
                         Asignatura[] vacio = {};
@@ -190,7 +191,7 @@ public class HiloServidor implements Runnable {
                 }
 
             } catch (IOException e) {
-                System.err.println("Cliente " + idCliente + " desconectado. de forma inesperada");
+                System.err.println("Cliente " + idCliente + " desconectado de forma inesperada");
             } finally {
                 try {
                     if (salidaObjeto != null) {
@@ -198,13 +199,13 @@ public class HiloServidor implements Runnable {
                     }
                     // Cerrar el socket cuando el cliente cierra la conexión
                     socketCliente.close();
-                    System.err.println("Cliente " + idCliente + " desconectado.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
 
+            System.out.println("Cliente " + idCliente + " desconectado.");
             // Hora de desconexión
             Timestamp horaDesconexion = Timestamp.valueOf(LocalDateTime.now());
             logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: " + (horaDesconexion.getTime() - horaConexion.getTime()) + " milisegundos (" + ObjetoCompartido.formatearTimestamp(horaDesconexion) + ")");
