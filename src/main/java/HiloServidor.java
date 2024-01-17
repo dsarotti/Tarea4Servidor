@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * La clase HiloServidor implementa la interfaz Runnable y representa un hilo de servidor
  * que acepta conexiones de clientes y gestiona la comunicación con ellos.
  */
-public class HiloServidor implements Runnable{
+public class HiloServidor implements Runnable {
     final int PUERTO = 12345;
     private static Profesor[] profesores;
     private int lastIdProfesor;
@@ -19,15 +19,14 @@ public class HiloServidor implements Runnable{
     private int lastIdAsignatura;
 
 
-
     /**
      * Constructor de la clase HiloServidor.
      * Inicializa los contadores de ID y llama al método de inicialización.
      */
     public HiloServidor() {
-        this.lastIdProfesor =0;
-        this.lastIdAsignatura=300;
-        this.lastIdEspecialidad=200;
+        this.lastIdProfesor = 0;
+        this.lastIdAsignatura = 300;
+        this.lastIdEspecialidad = 200;
     }
 
     /**
@@ -45,27 +44,30 @@ public class HiloServidor implements Runnable{
      * valores del índice del bucle.
      * Después ejecuta un bucle para aceptar conexiones.
      */
-    private void init(){
+    private void init() {
         //Inicializar profesores
-        profesores=new Profesor[5];
-        for(int i=0;i<5;i++){
+        profesores = new Profesor[5];
+        for (int i = 0; i < 5; i++) {
             int idTempEspe = getNewIdEspecialidad();
-            Especialidad espe = new Especialidad(idTempEspe,"especialidad " + idTempEspe );
-            String nombreProfesor="Nombre " +i;
+            Especialidad espe = new Especialidad(idTempEspe, "especialidad " + idTempEspe);
+            String nombreProfesor = "Nombre " + i;
             Asignatura[] asignaturas = new Asignatura[3];
-            for (int j = 0 ; j<3;j++){
-                asignaturas[j] = new Asignatura(getNewIdAsignatura(),"NombreAsignatura" + j );
+            for (int j = 0; j < 3; j++) {
+                int idTempAsignatura = getNewIdAsignatura();
+                asignaturas[j] = new Asignatura(idTempAsignatura, "NombreAsignatura" + idTempAsignatura);
             }
-            profesores[i]=new Profesor(getNewIdProfesor(),nombreProfesor,asignaturas,espe);
+            profesores[i] = new Profesor(getNewIdProfesor(), nombreProfesor, asignaturas, espe);
         }
 
         //Muestra los profesores, especialidad y asignaturas por la salida estándar
-        report();
+        //report();
+
 
         try {
             // inicia el bucle para aceptar conexiones entrantes.
             ServerSocket servidorSocket = new ServerSocket(PUERTO);
             new Thread(new GestorSockets(servidorSocket)).start();
+            System.out.println("Servidor iniciado...");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -134,8 +136,8 @@ public class HiloServidor implements Runnable{
          * @param idCliente     El identificador único del cliente.
          */
         public ManejadorCliente(Socket socketCliente, int idCliente) {
-            this.idCliente=idCliente;
-            this.socketCliente=socketCliente;
+            this.idCliente = idCliente;
+            this.socketCliente = socketCliente;
         }
 
         /**
@@ -158,30 +160,38 @@ public class HiloServidor implements Runnable{
                 salidaObjeto.writeInt(idCliente);
                 salidaObjeto.flush();
 
-                int idProfesorSolicitado;
+                String idProfeSoli="";
                 // Escuchar solicitudes del cliente y enviar el Profesor correspondiente
                 while (true) {
                     // Recibir el ID del profesor que el cliente desea obtener
-                    idProfesorSolicitado= (-1);
-                    try{
+                    try {
+                        idProfeSoli = entradaDatos.nextLine();
                         //Si se ha recibido un número, guardarlo y registrarlo en el log
-                        idProfesorSolicitado = Integer.parseInt(entradaDatos.nextLine());
-                        logger.agregarLineaAlFinal("    Consultando id: " + idProfesorSolicitado + ", solicitado por el cliente: " + idCliente);
-                    }catch (NoSuchElementException | NumberFormatException e){
-                        //Si no se ha recibido un número, terminar la conexión
-                        break;
+                        logger.agregarLineaAlFinal("    Consultando id: " + Integer.parseInt(idProfeSoli) + ", solicitado por el cliente: " + idCliente);
+                    } catch (NoSuchElementException | NumberFormatException e) {
+                        if(idProfeSoli.equals("*")) {
+                            break;
+                        }else{
+                            throw new IOException();
+                        }
                     }
-                    if(idProfesorSolicitado==-1)break;
-                    // Buscar el profesor con el ID solicitado
-                    Profesor profesorEncontrado = buscarProfesorPorId(idProfesorSolicitado);
 
+                    System.out.println(("Consultando id: " + idProfeSoli + ", solicitado por cliente: " + idCliente).indent(4).stripTrailing());
+                    // Buscar el profesor con el ID solicitado
+                    Profesor profesorEncontrado = buscarProfesorPorId(Integer.parseInt(idProfeSoli));
+
+                    if (profesorEncontrado == null) {
+                        Asignatura[] vacio = {};
+                        Especialidad espe = new Especialidad(0, "sin datos");
+                        profesorEncontrado = new Profesor(0, "No existe", vacio, espe);
+                    }
                     // Enviar el objeto Profesor al cliente
                     salidaObjeto.writeObject(profesorEncontrado);
                     salidaObjeto.flush();
                 }
 
             } catch (IOException e) {
-                System.err.println("Cliente " + idCliente + " desconectado. de forma inesperada");
+                System.err.println("Cliente " + idCliente + " desconectado de forma inesperada");
             } finally {
                 try {
                     if (salidaObjeto != null) {
@@ -189,16 +199,16 @@ public class HiloServidor implements Runnable{
                     }
                     // Cerrar el socket cuando el cliente cierra la conexión
                     socketCliente.close();
-                    System.err.println("Cliente " + idCliente + " desconectado.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
 
+            System.out.println("Cliente " + idCliente + " desconectado.");
             // Hora de desconexión
-            Timestamp horaDesconexion= Timestamp.valueOf(LocalDateTime.now());
-            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: "+ (horaDesconexion.getTime() - horaConexion.getTime()) +" milisegundos (" + ObjetoCompartido.formatearTimestamp(horaDesconexion) + ")");
+            Timestamp horaDesconexion = Timestamp.valueOf(LocalDateTime.now());
+            logger.agregarLineaAlFinal("=> FIN con cliente: " + idCliente + ", Tiempo total conectado: " + (horaDesconexion.getTime() - horaConexion.getTime()) + " milisegundos (" + ObjetoCompartido.formatearTimestamp(horaDesconexion) + ")");
 
         }
     }
@@ -223,45 +233,52 @@ public class HiloServidor implements Runnable{
      *
      * @return El nuevo ID de especialidad.
      */
-    private int getNewIdEspecialidad(){return lastIdEspecialidad++;}
+    private int getNewIdEspecialidad() {
+        return lastIdEspecialidad++;
+    }
 
     /**
      * Método para obtener un nuevo ID de profesor.
      *
      * @return El nuevo ID de profesor.
      */
-    private int getNewIdProfesor(){return lastIdProfesor++;}
+    private int getNewIdProfesor() {
+        return lastIdProfesor++;
+    }
 
     /**
      * Método para obtener un nuevo ID de asignatura.
      *
      * @return El nuevo ID de asignatura.
      */
-    private int getNewIdAsignatura(){return lastIdAsignatura++;}
-
-    /**
-     * Método para mostrar por la salida estándar los datos de los profesores y sus asignaturas (para debug).
-     */
-    public void report(){
-        StringBuilder builder = new StringBuilder();
-        for (Profesor profesor : profesores) {
-            builder.setLength(0);
-            System.out.println(builder.append("Id: ").append(profesor.getIdprofesor()));
-            builder.setLength(0);
-            System.out.println(builder.append("Nombre: ").append(profesor.getNombre()));
-
-            System.out.println("Especialidad: ");
-            builder.setLength(0);
-            System.out.print((builder.append("Id: ").append(profesor.getEspecialidad().getId())).toString().indent(4));
-            builder.setLength(0);
-            System.out.print((builder.append("Nombre: ").append(profesor.getEspecialidad().getNombreEspecialidad())).toString().indent(4));
-            System.out.println("Asignaturas: ");
-            for (int j = 0; j < profesor.getAsignaturas().length; j++) {
-                builder.setLength(0);
-                System.out.print(builder.append("Id: ").append(profesor.getAsignaturas()[j].getId()).toString().indent(4) );
-                builder.setLength(0);
-                System.out.print(builder.append("Nombre: ").append(profesor.getAsignaturas()[j].getNombreAsignatura()).toString().indent(4));
-            }
-        }
+    private int getNewIdAsignatura() {
+        return lastIdAsignatura++;
     }
+
+//Comento este método, ya que es útil para debug en el server pero no necesario para la implementación
+//    /**
+//     * Método para mostrar por la salida estándar los datos de los profesores y sus asignaturas (para debug).
+//     */
+//    public void report(){
+//        StringBuilder builder = new StringBuilder();
+//        for (Profesor profesor : profesores) {
+//            builder.setLength(0);
+//            System.out.println(builder.append("Id: ").append(profesor.getIdprofesor()));
+//            builder.setLength(0);
+//            System.out.println(builder.append("Nombre: ").append(profesor.getNombre()));
+//
+//            System.out.println("Especialidad: ");
+//            builder.setLength(0);
+//            System.out.print((builder.append("Id: ").append(profesor.getEspecialidad().getId())).toString().indent(4));
+//            builder.setLength(0);
+//            System.out.print((builder.append("Nombre: ").append(profesor.getEspecialidad().getNombreEspecialidad())).toString().indent(4));
+//            System.out.println("Asignaturas: ");
+//            for (int j = 0; j < profesor.getAsignaturas().length; j++) {
+//                builder.setLength(0);
+//                System.out.print(builder.append("Id: ").append(profesor.getAsignaturas()[j].getId()).toString().indent(4) );
+//                builder.setLength(0);
+//                System.out.print(builder.append("Nombre: ").append(profesor.getAsignaturas()[j].getNombreAsignatura()).toString().indent(4));
+//            }
+//        }
+//    }
 }
