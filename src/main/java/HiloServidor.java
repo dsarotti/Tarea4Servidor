@@ -13,10 +13,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class HiloServidor implements Runnable {
+
+    /**
+     * Puerto en el que se abre el servidor
+     */
     final int PUERTO = 12345;
+
+    /**
+     * Lista de profesores creados en este servidor
+     */
     private static Profesor[] profesores;
+
+    /**
+     * Último Id asignado a un profesor
+     */
     private int lastIdProfesor;
+
+    /**
+     * Último Id asignada a una especialidad
+     */
     private int lastIdEspecialidad;
+
+    /**
+     * Último Id asignada a una asignatura
+     */
     private int lastIdAsignatura;
 
 
@@ -79,8 +99,14 @@ public class HiloServidor implements Runnable {
      * por cada conexión aceptada.
      */
     static class GestorSockets implements Runnable {
+        /**
+         * El socket que utiliza este servidor
+         */
         private final ServerSocket server;
 
+        /**
+         * Contador para asignar Ids a los clientes que se conectan
+         */
         // Se utiliza AtomicInteger para poder actualizar el valor evitando problemas de
         // concurrencia.
         public static AtomicInteger contadorClientes = new AtomicInteger(1);
