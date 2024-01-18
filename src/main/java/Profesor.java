@@ -3,6 +3,7 @@ import java.io.Serializable;
 /**
  * La clase Profesor representa a un profesor en un sistema académico.
  * Implementa la interfaz Serializable para permitir la serialización de objetos.
+ * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class Profesor implements Serializable {
 

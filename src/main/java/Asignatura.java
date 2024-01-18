@@ -3,6 +3,7 @@ import java.io.Serializable;
 /**
  * La clase Asignatura representa una asignatura en un sistema académico.
  * Implementa la interfaz Serializable para permitir la serialización de objetos.
+ * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class Asignatura implements Serializable {
 

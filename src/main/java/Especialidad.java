@@ -3,6 +3,7 @@ import java.io.Serializable;
 /**
  * La clase Especialidad representa una especialidad en un sistema académico.
  * Implementa la interfaz Serializable para permitir la serialización de objetos.
+ * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class Especialidad implements Serializable {
 

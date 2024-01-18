@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 /**
  * La clase ObjetoCompartido implementa un patrón Singleton y proporciona funcionalidades
  * para el manejo de un archivo de registro (log) compartido entre múltiples hilos.
+ * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class ObjetoCompartido {
 

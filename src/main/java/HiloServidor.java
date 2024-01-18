@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * La clase HiloServidor implementa la interfaz Runnable y representa un hilo de servidor
  * que acepta conexiones de clientes y gestiona la comunicación con ellos.
+ * @author Dante Sarotti, Miriam Betanzos Jamardo
  */
 public class HiloServidor implements Runnable {
     final int PUERTO = 12345;
