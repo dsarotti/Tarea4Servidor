@@ -12,7 +12,7 @@ public class ObjetoCompartido {
     /**
      * Instancia única de la clase
      */
-    static ObjetoCompartido objetoCompartidoInstance;
+    static volatile ObjetoCompartido objetoCompartidoInstance;
 
     /**
      * Archivo de registro (log)
@@ -100,10 +100,11 @@ public class ObjetoCompartido {
 
     /**
      * Método estático que devuelve la instancia única de la clase ObjetoCompartido.
-     *
      * @return La instancia única de ObjetoCompartido.
      */
     public static ObjetoCompartido getInstance() {
+        // Este método sigue el patrón "Double-Checked Locking" para
+        // asegurar el buen funcionamiento en entornos multihilo.
         if (objetoCompartidoInstance == null) {
             synchronized (ObjetoCompartido.class) {
                 if (objetoCompartidoInstance == null) {
